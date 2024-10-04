@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Test</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <h1>Nhập Mã số ID và Bài kiểm tra</h1>
+    <input type="text" id="user_id" placeholder="Nhập mã số ID">
+    <input type="text" id="test" placeholder="Nhập bài kiểm tra">
+    <button onclick="submitTest()">Phân tích</button>
+    <div id="response"></div>
+    <div id="course_chart"></div>
+    <div id="lesson_day_chart"></div>
+    <div id="average_time_chart"></div>
+    <div id="time_week_chart"></div>
+    <div id="count_lesson_day_chart"></div>
+    <div id="count_lesson_week_chart"></div>
+    <div id="quiz_week_chart"></div>
+    <div id="quiz_score_chart"></div>
+    <div id="score_6_chart"></div>
+    <div id="score_title"></div>
+    <div id="quiz_average_score_chart"></div>
+    
+    <div id="get_time_quiz"></div>
+    <div id="number_user_join"></div>
+    <div id="get_avg_duration_per_quiz"></div>
+    <div id="score_group"></div>
+    <div id="distribution_score"></div>
+    <div id="compare_scores"></div>
+    <div id="get_user_score"></div>
+    <div id="get_rank"></div>
+
+    <script>
+        function submitTest() {
+            const user_id = document.getElementById('user_id').value;
+            const test = document.getElementById('test').value;
+            if (!user_id) {
+                document.getElementById('response').innerText = "Vui lòng nhập ID người học.";
+                return;
+            }
+    
+            fetch('/api/submit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ user_id: user_id, test: test }),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById('response').innerText = `Xin chào người học có ID, ${data.user_id}!`;
+                if (data.mode == "analysis performance"){                    
+                    displayChartData(data.course_chart, 'course_chart');
+                    displayChartData(data.lesson_day_chart, 'lesson_day_chart');
+                    displayChartData(data.average_time_chart, 'average_time_chart');
+                    displayChartData(data.time_week_chart, 'time_week_chart');
+                    displayChartData(data.count_lesson_day_chart, 'count_lesson_day_chart');
+                    displayChartData(data.count_lesson_week_chart, 'count_lesson_week_chart');
+                    displayChartData(data.quiz_week_chart, 'quiz_week_chart');
+                    displayChartData(data.quiz_score_chart, 'quiz_score_chart');
+                    displayChartData(data.score_6_chart, 'score_6_chart');
+                    displayChartData(data.score_title, 'score_title');
+                    displayChartData(data.quiz_average_score_chart, 'quiz_average_score_chart');
+                }
+                else{
+                    displayChartData(data.get_time_quiz, 'get_time_quiz');
+                    //displayChartData(data.calculate_completion_rate, 'calculate_completion_rate');
+                    displayChartData(data.number_user_join, 'number_user_join');
+                    displayChartData(data.get_avg_duration_per_quiz, 'get_avg_duration_per_quiz');
+                    displayChartData(data.score_group, 'score_group');
+                    displayChartData(data.distribution_score, 'distribution_score');
+                    displayChartData(data.compare_scores, 'compare_scores');
+                    displayChartData(data.get_user_score, 'get_user_score');
+                    displayChartData(data.get_rank, 'get_rank');
+                }
+            })
+            .catch(error => {
+                document.getElementById('response').innerText = "Đã xảy ra lỗi. Vui lòng thử lại.";
+                console.error('Error:', error);
+            });
+        }
+    
+        function displayChartData(chartData, elementId) {
+            try {
+                var parseData = JSON.parse(chartData);
+                Plotly.newPlot(elementId, parseData.data, parseData.layout);
+            } catch (error) {
+                console.error('Error parsing or plotting chart data:', error);
+                document.getElementById(elementId).innerText = `Không thể hiển thị biểu đồ ${elementId}.`;
+            }
+        }
+    </script>
+</body>
+</html>
